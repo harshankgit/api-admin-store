@@ -1,47 +1,150 @@
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+// import jwt from "jsonwebtoken";
+// import User from "../models/User.js";
+
+// // Authenticate JWT token middleware
+// export const authenticate = async (req, res, next) => {
+//   try {
+//     // Get token from header
+//     const token = req.headers.authorization;
+
+//     // if (!authHeader || !authHeader.startsWith("Bearer ")) {
+//     //   return res
+//     //     .status(401)
+//     //     .json({ message: "No token, authorization denied" });
+//     // }
+
+//     // const token = authHeader.split(" ")[1];
+//     console.log(process.env.JWT_SECRET, token);
+//     // Verify token
+//     const decoded = jwt.verify(
+//       token,
+//       process.env.JWT_SECRET || "your-secret-key"
+//     );
+//     console.log(decoded);
+
+//     // Add user to request object
+//     const user = await User.findById(decoded.id).select("-password");
+
+//     if (!user) {
+//       return res
+//         .status(401)
+//         .json({ message: "Token is not valid or user does not exist" });
+//     }
+
+//     req.user = user;
+//     next();
+//   } catch (error) {
+//     console.error("Authentication error:", error);
+
+//     if (error.name === "TokenExpiredError") {
+//       return res.status(401).json({ message: "Token has expired" });
+//     }
+
+//     res.status(401).json({ message: "Token is not valid" });
+//   }
+// };
+
+// // Check if user has admin role
+// export const isAdmin = (req, res, next) => {
+//   console.log(req.user);
+
+//   if (req.user && req.user.role === "admin") {
+//     next();
+//   } else {
+//     res
+//       .status(403)
+//       .json({ message: "Access denied. Admin permission required" });
+//   }
+// };
+
+// // Check if user is the owner or an admin
+// export const isOwnerOrAdmin = (model) => async (req, res, next) => {
+//   try {
+//     const resourceId = req.params.id;
+//     const resource = await model.findById(resourceId);
+
+//     if (!resource) {
+//       return res.status(404).json({ message: "Resource not found" });
+//     }
+
+//     // Check if user is owner of the resource
+//     const isOwner =
+//       resource.user && resource.user.toString() === req.user._id.toString();
+
+//     if (isOwner || req.user.role === "admin") {
+//       next();
+//     } else {
+//       res.status(403).json({ message: "Access denied. Not authorized" });
+//     }
+//   } catch (error) {
+//     console.error("Authorization error:", error);
+//     res
+//       .status(500)
+//       .json({ message: "Server error during authorization check" });
+//   }
+// };
+
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 // Authenticate JWT token middleware
 export const authenticate = async (req, res, next) => {
   try {
-    // Get token from header
+    // Extract the token from the Authorization header
     const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'No token, authorization denied' });
+    if (!authHeader) {
+      return res
+        .status(401)
+        .json({ message: "No token, authorization denied" });
     }
-    
-    const token = authHeader.split(' ')[1];
-    
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    
-    // Add user to request object
-    const user = await User.findById(decoded.id).select('-password');
-    
+
+    const token = authHeader.split(" ")[1];
+    const secret = process.env.JWT_SECRET || "your-secret-key";
+
+    console.log("JWT_SECRET:", secret);
+    console.log("Token:", token);
+
+    // Verify the token
+    const decoded = jwt.verify(token, secret);
+    console.log("Decoded Token:", decoded);
+
+    // Fetch the user from the database
+    const user = await User.findById(decoded.id).select("-password");
     if (!user) {
-      return res.status(401).json({ message: 'Token is not valid or user does not exist' });
+      return res
+        .status(401)
+        .json({ message: "Token is invalid or user does not exist" });
     }
-    
+
+    // Attach the user to the request object
     req.user = user;
     next();
   } catch (error) {
-    console.error('Authentication error:', error);
-    
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ message: 'Token has expired' });
+    console.error("Authentication error:", error);
+
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token has expired" });
     }
-    
-    res.status(401).json({ message: 'Token is not valid' });
+
+    res.status(401).json({ message: "Token is not valid" });
   }
 };
 
 // Check if user has admin role
 export const isAdmin = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
-    next();
-  } else {
-    res.status(403).json({ message: 'Access denied. Admin permission required' });
+  try {
+    console.log("Authenticated User:", req.user);
+
+    if (req.user && req.user.role === "admin") {
+      return next();
+    } else {
+      return res
+        .status(403)
+        .json({ message: "Access denied. Admin permission required" });
+    }
+  } catch (error) {
+    console.error("Admin check error:", error);
+    res.status(500).json({ message: "Server error during admin check" });
   }
 };
 
@@ -49,22 +152,27 @@ export const isAdmin = (req, res, next) => {
 export const isOwnerOrAdmin = (model) => async (req, res, next) => {
   try {
     const resourceId = req.params.id;
+
+    // Fetch the resource from the database
     const resource = await model.findById(resourceId);
-    
     if (!resource) {
-      return res.status(404).json({ message: 'Resource not found' });
+      return res.status(404).json({ message: "Resource not found" });
     }
-    
-    // Check if user is owner of the resource
-    const isOwner = resource.user && resource.user.toString() === req.user._id.toString();
-    
-    if (isOwner || req.user.role === 'admin') {
-      next();
+
+    // Check if the authenticated user is the owner
+    const isOwner =
+      resource.user && resource.user.toString() === req.user._id.toString();
+
+    // Grant access if the user is the owner or an admin
+    if (isOwner || req.user.role === "admin") {
+      return next();
     } else {
-      res.status(403).json({ message: 'Access denied. Not authorized' });
+      return res.status(403).json({ message: "Access denied. Not authorized" });
     }
   } catch (error) {
-    console.error('Authorization error:', error);
-    res.status(500).json({ message: 'Server error during authorization check' });
+    console.error("Authorization error:", error);
+    res
+      .status(500)
+      .json({ message: "Server error during authorization check" });
   }
 };

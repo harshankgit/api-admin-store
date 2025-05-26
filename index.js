@@ -17,7 +17,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/luxecommerce";
+  process.env.MONGODB_URI ||
+  "mongodb+srv://adminstore:adminstore@cluster0.bhc2ze7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+// "mongodb://localhost:27017/luxecommerce";
 
 // Middleware
 app.use(cors());
