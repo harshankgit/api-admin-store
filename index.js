@@ -27,12 +27,11 @@ app.use(
     allowedHeaders: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   })
 );
-app.options("*");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // API Routes
-app.get("/", (req, res) => res.send("Server working properly...."));
+app.get("/", (req, res) => res.send("Server working on "));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -41,13 +40,6 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);
 
 // Serve static assets in production
-// if (process.env.NODE_ENV === "production") {
-//   app.use(express.static(path.join(__dirname, "../dist")));
-
-//   app.get("*", (req, res) => {
-//     res.sendFile(path.resolve(__dirname, "../dist", "index.html"));
-//   });
-// }
 
 // Connect to MongoDB
 mongoose
