@@ -12,9 +12,7 @@ import orderRoutes from "./routes/orders.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI =
-  process.env.MONGODB_URI ||
-  "mongodb+srv://adminstore:adminstore@cluster0.bhc2ze7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const MONGODB_URI = process.env.MONGODB_URI;
 
 // Middleware
 app.use(cors());
