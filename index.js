@@ -17,12 +17,7 @@ const MONGODB_URI =
   "mongodb+srv://adminstore:adminstore@cluster0.bhc2ze7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 // Middleware
-app.use(
-  cors({
-    origin: "*",
-    allowedHeaders: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-  })
-);
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
