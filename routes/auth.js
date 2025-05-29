@@ -21,21 +21,15 @@ router.post("/register", validateRegistration, async (req, res) => {
         .json({ message: "User with this email already exists" });
     }
 
-    // Create new user
-    const user = new User({
-      name,
-      email,
-      password,
-    });
-
+    // Create and save new user
+    const user = new User({ name, email, password });
     await user.save();
 
     // Generate JWT token
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "7d" }
-    );
+    const secret = process.env.JWT_SECRET || "your-secret-key";
+    const token = jwt.sign({ id: user._id, role: user.role }, secret, {
+      expiresIn: "7d",
+    });
 
     res.status(201).json({
       message: "User registered successfully",
@@ -48,7 +42,7 @@ router.post("/register", validateRegistration, async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Registration error:", error.message);
     res.status(500).json({ message: "Server error during registration" });
   }
 });
@@ -69,14 +63,12 @@ router.post("/login", validateLogin, async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
-    console.log(process.env.JWT_SECRET, "process.env.JWT_SECRET ");
 
     // Generate JWT token
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "7d" }
-    );
+    const secret = process.env.JWT_SECRET || "your-secret-key";
+    const token = jwt.sign({ id: user._id, role: user.role }, secret, {
+      expiresIn: "7d",
+    });
 
     res.json({
       message: "Login successful",
@@ -89,7 +81,7 @@ router.post("/login", validateLogin, async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("Login error:", error.message);
     res.status(500).json({ message: "Server error during login" });
   }
 });

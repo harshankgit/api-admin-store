@@ -10,15 +10,11 @@ import productRoutes from "./routes/products.js";
 import categoryRoutes from "./routes/categories.js";
 import orderRoutes from "./routes/orders.js";
 
-// Configuration
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI =
   process.env.MONGODB_URI ||
   "mongodb+srv://adminstore:adminstore@cluster0.bhc2ze7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-// "mongodb://localhost:27017/luxecommerce";
 
 // Middleware
 app.use(
@@ -70,10 +66,3 @@ app.use((req, res) => {
 });
 // Updated to export the app for Vercel
 export default app;
-
-// Start server only when running locally
-if (process.env.NODE_ENV !== "production") {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
